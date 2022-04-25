@@ -94,7 +94,8 @@ class Block {
 			</ul>
 			<p>
 				<?php
-				$post_id = isset( $_GET['post_id'] ) ? filter_input( INPUT_GET, $_GET['post_id'], FILTER_SANITIZE_NUMBER_INT ) : false; //phpcs:ignore
+				$post_id = isset( $_GET['post_id'] ) ? filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT ) : false; //phpcs:ignore
+
 				/* translators: %d: post ID */
 				$content = false !== $post_id ? sprintf( __( 'The current post ID is %d', 'site-counts' ), $post_id ) : __( 'Invalid post ID', 'site-counts' );
 
