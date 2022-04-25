@@ -81,8 +81,14 @@ class Block {
 					}
 
 					$count_obj = wp_count_posts( $post_type_slug );
-					// Assumption: We only want to retrieve count for 'published' posts.
-					$post_count = property_exists( $count_obj, 'publish' ) ? $count_obj->publish : 0;
+
+					if ( 'attachment' === $post_type_slug ) {
+						$post_count = property_exists( $count_obj, 'inherit' ) ? $count_obj->inherit : 0;
+					} else {
+						// Assumption: We only want to retrieve count for 'published' posts.
+						$post_count = property_exists( $count_obj, 'publish' ) ? $count_obj->publish : 0;
+					}
+
 					?>
 					<li>
 						<?php
@@ -97,7 +103,7 @@ class Block {
 				$post_id = isset( $_GET['post_id'] ) ? filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT ) : false; //phpcs:ignore
 
 				/* translators: %d: post ID */
-				$content = false !== $post_id ? sprintf( __( 'The current post ID is %d', 'site-counts' ), $post_id ) : __( 'Invalid post ID', 'site-counts' );
+				$content = false !== $post_id ? sprintf( __( 'The current post ID is %d.', 'site-counts' ), $post_id ) : __( 'Invalid post ID', 'site-counts' );
 
 				echo esc_html( $content );
 				?>
