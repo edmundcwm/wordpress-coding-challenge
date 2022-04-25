@@ -75,15 +75,14 @@ class Block {
 				<?php
 				foreach ( $post_types as $post_type_slug ) :
 					$post_type_object = get_post_type_object( $post_type_slug );
-					$post_count       = count(
-						get_posts(
-							[
-								'post_type'      => $post_type_slug,
-								'posts_per_page' => -1,
-							]
-						)
-					);
 
+					if ( null === $post_type_object ) {
+						continue;
+					}
+
+					$count_obj = wp_count_posts( $post_type_slug );
+					// Assumption: We only want to retrieve count for 'published' posts.
+					$post_count = property_exists( $count_obj, 'publish' ) ? $count_obj->publish : 0;
 					?>
 					<li>
 						<?php
