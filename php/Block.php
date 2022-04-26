@@ -83,6 +83,7 @@ class Block {
 					$count_obj = wp_count_posts( $post_type_slug );
 
 					if ( 'attachment' === $post_type_slug ) {
+						// Since all attachments belong to a post parent, we need to use the 'inherit' property.
 						$post_count = property_exists( $count_obj, 'inherit' ) ? $count_obj->inherit : 0;
 					} else {
 						// Assumption: We only want to retrieve count for 'published' posts.
@@ -109,11 +110,13 @@ class Block {
 				?>
 			</p>
 			<?php
-			$query = new WP_Query(
+			$number_of_posts = 5;
+			$query           = new WP_Query(
 				[
-					'post_type'     => [ 'post', 'page' ],
-					'post_status'   => 'any',
-					'date_query'    => [
+					'post_type'              => [ 'post', 'page' ],
+					'post_status'            => 'any',
+					'posts_per_page'         => $number_of_posts + 3, // add some buffer just in case the current post gets picked up.
+					'date_query'             => [
 						[
 							'hour'    => 9,
 							'compare' => '>=',
@@ -123,19 +126,37 @@ class Block {
 							'compare' => '<=',
 						],
 					],
-					'tag'           => 'foo',
-					'category_name' => 'baz',
-					'post__not_in'  => [ get_the_ID() ],
+					'tag'                    => 'foo',
+					'category_name'          => 'baz',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'ignore_sticky_posts'    => true,
 				]
 			);
 
 			if ( $query->have_posts() ) :
 				?>
-				<h2><?php echo esc_html__( '5 posts with the tag of foo and the category of baz', 'site-counts' ); ?></h2>
+				<h2>
+					<?php
+					/* translators: %d: number of posts to show */
+					printf( esc_html__( '%d posts with the tag of foo and the category of baz', 'site-counts' ), esc_html( $number_of_posts ) );
+					?>
+				</h2>
 				<ul>
-					<?php foreach ( array_slice( $query->posts, 0, 5 ) as $post ) : ?>
-						<li><?php echo wp_kses_post( $post->post_title ); ?></li>
-					<?php endforeach; ?>
+					<?php
+					$filtered_posts = array_filter(
+						$query->posts,
+						function( $post ) {
+							return get_the_ID() !== $post->ID;
+						}
+					);
+
+					for ( $i = 1; $i <= $number_of_posts; $i++ ) {
+						?>
+						<li><?php echo wp_kses_post( $filtered_posts[ $i ]->post_title ); ?></li>
+						<?php
+					}
+					?>
 				</ul>
 			<?php endif; ?>
 		</div>
